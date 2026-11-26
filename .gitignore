@@ -1,0 +1,18 @@
+@'
+# Caches Python e testes
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Logs e dados locais do Airflow/Docker
+logs/
+airflow.cfg
+airflow.db
+unittests.cfg
+*.log
+
+# Segredos e ambiente
+.env
+.venv/
+venv/
+'@ | Set-Content -Encoding ascii .gitignore

@@ -1,0 +1,1 @@
+"""Módulos de ingestão, métricas e persistência do pipeline de pricing."""
