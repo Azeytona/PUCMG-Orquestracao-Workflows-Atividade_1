@@ -1,4 +1,4 @@
-# ShopBrasil – Pipeline de Pricing (Airflow)
+# Pipeline de Pricing (Airflow)
 
 Substitui o script cron por um DAG que coleta produtos da FakeStore API,
 calcula métricas por categoria e grava no PostgreSQL de forma idempotente.
@@ -6,7 +6,7 @@ calcula métricas por categoria e grava no PostgreSQL de forma idempotente.
 
 # Estrutura do Projeto
 
-shopbrasil-pricing-pipeline/
+PUCMG-Orquestracao-Workflows-Atividade_1/
 ├──.gitattributes
 ├──.gitignore
 ├── docker-compose.yml
@@ -47,7 +47,7 @@ SELECT * FROM pricing_category_snapshot ORDER BY run_date DESC, category;
 ## Testes
 
 ```bash
-PYTHONPATH=dags pytest tests/
+docker compose exec analytics-db psql -U analytics -d analytics -c "SELECT run_date, COUNT(*) FROM pricing_category_snapshot GROUP BY run_date;"
 ```
 
 ## Decisões de projeto
@@ -59,3 +59,17 @@ PYTHONPATH=dags pytest tests/
 - **Escala:** categorias são descobertas a partir dos dados (`listar_categorias`), sem edição de código.
 - **Concorrência:** o mapeamento por categoria roda no `ecommerce_pool`, limitado a 2 slots.
 - **Alertas:** callbacks de falha, retry e sucesso. O envio é simulado em log e deve ser trocado por um canal real.
+
+## Esclarecimentos adicionais
+
+- **.gitignore:** impede que arquivos gerados localmente ou sensíveis sejam enviados ao GitHub:
+• Caches Python (__pycache__/, *.pyc, .pytest_cache/): criados ao rodar Python e pytest localmente.
+• Logs e arquivos do Airflow (logs/, airflow.cfg, airflow.db, *.log): gerados pelo Airflow durante a execução.
+• Ambiente e segredos (.env, .venv/, venv/): podem conter senhas ou dependências locais.
+- **pytest.ini:** arquivo como alternativa ao $env:PYTHONPATH = "dags", que vale só para a janela atual do PowerShell. O pytest adiciona a pasta dags ao caminho de import, e os testes encontram from pricing.metrics import ... sem configuração manual.Somente para os testes unitários. O Docker não o utiliza
+- **requirements.txt:** lista as bibliotecas Python instaladas dentro da imagem Docker. O Dockerfile faz COPY e pip install -r desse arquivo:
+• apache-airflow-providers-postgres: fornece o PostgresHook usado em repository.py.
+• requests: usado em api_client.py para chamar a FakeStore API.
+• pytest: usado para os testes unitários, como está nesse arquivo, ele também entra na imagem. Isso não prejudica o funcionamento.
+- **__init__.py:** fica vazio de propósito. Serve para marcar a pasta dags/pricing/ como um pacote Python, o que permite from pricing import alerts, api_client, metrics, repository na DAG e from pricing.metrics import ... nos testes. Em Python 3, o arquivo é tecnicamente opcional, mas mantê-lo é a prática padrão e evita problemas com ferramentas como o pytest.
+
