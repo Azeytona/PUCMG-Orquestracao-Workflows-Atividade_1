@@ -42,6 +42,7 @@ docker compose up -d --build
 Consulta de validação:
 ```sql
 SELECT * FROM pricing_category_snapshot ORDER BY run_date DESC, category;
+SELECT * FROM pricing_category_history  ORDER BY run_date DESC, category;
 ```
 
 ## Testes
